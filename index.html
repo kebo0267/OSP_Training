@@ -64,8 +64,8 @@
     <section>
       <h2>Pearl Flash Cards</h2>
       <p>Use the pearl number to recall the word, then reveal the answer.</p>
-      <div id="pearl-card"></div>
-      <button id="reveal-pearl" type="button">Reveal Word</button>
+      <div id="pearl-card" aria-live="polite"></div>
+      <button id="reveal-pearl" type="button" aria-label="Reveal current pearl word">Reveal Word</button>
       <button id="previous-pearl" type="button">Previous</button>
       <button id="next-pearl" type="button">Next</button>
     </section>
@@ -112,9 +112,9 @@
     ];
 
     const fillInBlank = [
-      { prompt: "Omega Psi Phi was founded in ____.", answer: "1911" },
-      { prompt: "Omega Psi Phi was founded at ____ University.", answer: "Howard" },
-      { prompt: "The organization was founded by ____ men.", answer: "four" }
+      { prompt: "Omega Psi Phi was founded in ____.", acceptedAnswers: ["1911"] },
+      { prompt: "Omega Psi Phi was founded at ____ University.", acceptedAnswers: ["howard"] },
+      { prompt: "The organization was founded by ____ men.", acceptedAnswers: ["four", "4"] }
     ];
 
     let pearlIndex = 0;
@@ -130,6 +130,8 @@
       pearlCard.textContent = revealed
         ? `Pearl ${current.number}: ${current.word}`
         : `Pearl ${current.number}: ?`;
+      previousPearlButton.setAttribute("aria-label", `Show previous pearl from pearl ${current.number}`);
+      nextPearlButton.setAttribute("aria-label", `Show next pearl from pearl ${current.number}`);
     }
 
     revealPearlButton.addEventListener("click", () => {
@@ -153,12 +155,12 @@
     const mcqResult = document.getElementById("mcq-result");
 
     multipleChoice.forEach((question, index) => {
-      const block = document.createElement("div");
+      const block = document.createElement("fieldset");
       block.className = "question";
-      block.innerHTML = `<p>${index + 1}. ${question.prompt}</p>`;
+      block.innerHTML = `<legend>${index + 1}. ${question.prompt}</legend>`;
       question.options.forEach((option) => {
         const optionSlug = option.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-        const optionId = `mcq-${index}-${optionSlug}`;
+        const optionId = `mcq-${index}-opt-${optionSlug}`;
         const row = document.createElement("div");
         row.className = "answer-row";
         row.innerHTML = `
@@ -191,7 +193,7 @@
       block.innerHTML = `
         <label for="fib-${index}">${index + 1}. ${question.prompt}</label>
         <div class="answer-row">
-          <input type="text" id="fib-${index}" autocomplete="off">
+          <input type="text" id="fib-${index}" autocomplete="off" aria-required="true">
         </div>
       `;
       fibContainer.appendChild(block);
@@ -201,9 +203,8 @@
       let score = 0;
       fillInBlank.forEach((question, index) => {
         const input = document.getElementById(`fib-${index}`);
-        const normalized = input.value.trim().toLowerCase();
-        const expected = question.answer.trim().toLowerCase();
-        if (normalized === expected) {
+        const userAnswer = input.value.trim().toLowerCase();
+        if (question.acceptedAnswers.includes(userAnswer)) {
           score += 1;
         }
       });

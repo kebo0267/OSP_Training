@@ -10,4 +10,4 @@ A lightweight browser-based Omega Psi Phi training app.
 
 ## Run
 
-Open `/tmp/workspace/kebo0267/OSP_Training/index.html` in any browser.
+From the project root, open `index.html` in any browser.
