@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omega Psi Phi Training</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: Arial, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 1rem;
+      background: #f3f4f6;
+      color: #111827;
+    }
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+    section {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    h1, h2 {
+      margin-top: 0;
+    }
+    button {
+      margin-right: 0.5rem;
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      cursor: pointer;
+    }
+    .question {
+      margin-top: 0.75rem;
+    }
+    .answer-row {
+      margin-top: 0.5rem;
+    }
+    .result {
+      margin-top: 0.75rem;
+      font-weight: 700;
+    }
+    .correct {
+      color: #065f46;
+    }
+    .incorrect {
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Omega Psi Phi Training</h1>
+
+    <section>
+      <h2>Pearl Flash Cards</h2>
+      <p>Use the pearl number to recall the word, then reveal the answer.</p>
+      <div id="pearl-card"></div>
+      <button id="reveal-pearl" type="button">Reveal Word</button>
+      <button id="previous-pearl" type="button">Previous</button>
+      <button id="next-pearl" type="button">Next</button>
+    </section>
+
+    <section>
+      <h2>History Quiz (Multiple Choice)</h2>
+      <div id="mcq-container"></div>
+      <button id="submit-mcq" type="button">Check Multiple Choice</button>
+      <p id="mcq-result" class="result"></p>
+    </section>
+
+    <section>
+      <h2>History Quiz (Fill in the Blank)</h2>
+      <div id="fib-container"></div>
+      <button id="submit-fib" type="button">Check Fill in the Blank</button>
+      <p id="fib-result" class="result"></p>
+    </section>
+  </main>
+
+  <script>
+    const pearls = [
+      { number: 1, word: "Manhood" },
+      { number: 2, word: "Scholarship" },
+      { number: 3, word: "Perseverance" },
+      { number: 4, word: "Uplift" }
+    ];
+
+    const multipleChoice = [
+      {
+        prompt: "In what year was Omega Psi Phi founded?",
+        options: ["1906", "1911", "1920"],
+        answer: "1911"
+      },
+      {
+        prompt: "At which university was Omega Psi Phi founded?",
+        options: ["Howard University", "Morehouse College", "Tuskegee University"],
+        answer: "Howard University"
+      },
+      {
+        prompt: "How many founders are known as the Founders of Omega Psi Phi?",
+        options: ["2", "3", "4"],
+        answer: "4"
+      }
+    ];
+
+    const fillInBlank = [
+      { prompt: "Omega Psi Phi was founded in ____.", answer: "1911" },
+      { prompt: "Omega Psi Phi was founded at ____ University.", answer: "Howard" },
+      { prompt: "The organization was founded by ____ men.", answer: "four" }
+    ];
+
+    let pearlIndex = 0;
+    let revealed = false;
+
+    const pearlCard = document.getElementById("pearl-card");
+    const revealPearlButton = document.getElementById("reveal-pearl");
+    const previousPearlButton = document.getElementById("previous-pearl");
+    const nextPearlButton = document.getElementById("next-pearl");
+
+    function renderPearl() {
+      const current = pearls[pearlIndex];
+      pearlCard.textContent = revealed
+        ? `Pearl ${current.number}: ${current.word}`
+        : `Pearl ${current.number}: ?`;
+    }
+
+    revealPearlButton.addEventListener("click", () => {
+      revealed = true;
+      renderPearl();
+    });
+
+    previousPearlButton.addEventListener("click", () => {
+      pearlIndex = (pearlIndex - 1 + pearls.length) % pearls.length;
+      revealed = false;
+      renderPearl();
+    });
+
+    nextPearlButton.addEventListener("click", () => {
+      pearlIndex = (pearlIndex + 1) % pearls.length;
+      revealed = false;
+      renderPearl();
+    });
+
+    const mcqContainer = document.getElementById("mcq-container");
+    const mcqResult = document.getElementById("mcq-result");
+
+    multipleChoice.forEach((question, index) => {
+      const block = document.createElement("div");
+      block.className = "question";
+      block.innerHTML = `<p>${index + 1}. ${question.prompt}</p>`;
+      question.options.forEach((option) => {
+        const optionSlug = option.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+        const optionId = `mcq-${index}-${optionSlug}`;
+        const row = document.createElement("div");
+        row.className = "answer-row";
+        row.innerHTML = `
+          <input type="radio" id="${optionId}" name="mcq-${index}" value="${option}">
+          <label for="${optionId}">${option}</label>
+        `;
+        block.appendChild(row);
+      });
+      mcqContainer.appendChild(block);
+    });
+
+    document.getElementById("submit-mcq").addEventListener("click", () => {
+      let score = 0;
+      multipleChoice.forEach((question, index) => {
+        const selected = document.querySelector(`input[name="mcq-${index}"]:checked`);
+        if (selected && selected.value === question.answer) {
+          score += 1;
+        }
+      });
+      mcqResult.textContent = `You scored ${score} out of ${multipleChoice.length}.`;
+      mcqResult.className = `result ${score === multipleChoice.length ? "correct" : "incorrect"}`;
+    });
+
+    const fibContainer = document.getElementById("fib-container");
+    const fibResult = document.getElementById("fib-result");
+
+    fillInBlank.forEach((question, index) => {
+      const block = document.createElement("div");
+      block.className = "question";
+      block.innerHTML = `
+        <label for="fib-${index}">${index + 1}. ${question.prompt}</label>
+        <div class="answer-row">
+          <input type="text" id="fib-${index}" autocomplete="off">
+        </div>
+      `;
+      fibContainer.appendChild(block);
+    });
+
+    document.getElementById("submit-fib").addEventListener("click", () => {
+      let score = 0;
+      fillInBlank.forEach((question, index) => {
+        const input = document.getElementById(`fib-${index}`);
+        const normalized = input.value.trim().toLowerCase();
+        const expected = question.answer.trim().toLowerCase();
+        if (normalized === expected) {
+          score += 1;
+        }
+      });
+      fibResult.textContent = `You scored ${score} out of ${fillInBlank.length}.`;
+      fibResult.className = `result ${score === fillInBlank.length ? "correct" : "incorrect"}`;
+    });
+
+    renderPearl();
+  </script>
+</body>
+</html>
